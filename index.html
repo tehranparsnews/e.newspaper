@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miranoo Search Engine</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#7f5af0',secondary:'#2cb67d'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Inter', sans-serif;
+background-color: #f9fafb;
+transition: background-color 0.3s ease;
+}
+.dark {
+background-color: #16161a;
+color: #fffffe;
+}
+.dark .card {
+background-color: #242629;
+border-color: #383a41;
+}
+.dark .search-bar {
+background-color: #242629;
+border-color: #383a41;
+}
+.dark .sidebar {
+background-color: #242629;
+border-color: #383a41;
+}
+.dark .header {
+background-color: #16161a;
+border-color: #383a41;
+}
+.dark .footer {
+background-color: #16161a;
+border-color: #383a41;
+}
+.dark .speed-dial {
+background-color: #242629;
+border-color: #383a41;
+}
+.dark .dropdown-menu {
+background-color: #242629;
+border-color: #383a41;
+}
+.search-bar:focus-within {
+box-shadow: 0 0 0 2px rgba(127, 90, 240, 0.3);
+}
+.speed-dial {
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.speed-dial:hover {
+transform: translateY(-2px);
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.custom-switch {
+position: relative;
+display: inline-block;
+width: 48px;
+height: 24px;
+}
+.custom-switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+.slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #ccc;
+transition: .4s;
+border-radius: 24px;
+}
+.slider:before {
+position: absolute;
+content: "";
+height: 18px;
+width: 18px;
+left: 3px;
+bottom: 3px;
+background-color: white;
+transition: .4s;
+border-radius: 50%;
+}
+input:checked + .slider {
+background-color: #7f5af0;
+}
+input:checked + .slider:before {
+transform: translateX(24px);
+}
+.range-slider {
+-webkit-appearance: none;
+width: 100%;
+height: 6px;
+border-radius: 5px;
+background: #d3d3d3;
+outline: none;
+}
+.range-slider::-webkit-slider-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 16px;
+height: 16px;
+border-radius: 50%;
+background: #7f5af0;
+cursor: pointer;
+}
+.range-slider::-moz-range-thumb {
+width: 16px;
+height: 16px;
+border-radius: 50%;
+background: #7f5af0;
+cursor: pointer;
+}
+.dropdown-menu {
+display: none;
+position: absolute;
+z-index: 50;
+}
+.dropdown:hover .dropdown-menu {
+display: block;
+}
+.search-suggestions {
+display: none;
+position: absolute;
+top: 100%;
+left: 0;
+right: 0;
+z-index: 50;
+}
+.sidebar {
+transition: transform 0.3s ease;
+}
+.sidebar-collapsed {
+transform: translateX(-100%);
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- Header Section -->
+<header class="header w-full py-4 px-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-40">
+<div class="flex items-center">
+<h1 class="text-2xl font-['Pacifico'] text-primary mr-6">Miranoo</h1>
+<button id="sidebar-toggle" class="p-2 rounded-button hover:bg-gray-100 mr-4 w-10 h-10 flex items-center justify-center">
+<i class="ri-menu-line ri-lg"></i>
+</button>
+</div>
+<nav class="hidden md:flex items-center space-x-6">
+<a href="#" class="text-gray-800 hover:text-primary font-medium">Home</a>
+<a href="#" class="text-gray-800 hover:text-primary font-medium">Features</a>
+<a href="#" class="text-gray-800 hover:text-primary font-medium">Settings</a>
+<a href="#" class="text-gray-800 hover:text-primary font-medium flex items-center">
+<span class="bg-primary text-white px-3 py-1 rounded-full text-xs mr-2">NOO</span>
+NOO Corner
+</a>
+</nav>
+<div class="flex items-center space-x-4">
+<label class="custom-switch">
+<input type="checkbox" id="theme-toggle">
+<span class="slider"></span>
+</label>
+<div class="dropdown relative">
+<button class="p-2 rounded-full hover:bg-gray-100 w-10 h-10 flex items-center justify-center">
+<i class="ri-user-line ri-lg"></i>
+</button>
+<div class="dropdown-menu mt-2 right-0 w-48 bg-white rounded shadow-lg border border-gray-200 py-2">
+<a href="#" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
+<a href="#" class="block px-4 py-2 hover:bg-gray-100">Settings</a>
+<a href="#" class="block px-4 py-2 hover:bg-gray-100">Help</a>
+<div class="border-t border-gray-200 my-1"></div>
+<a href="#" class="block px-4 py-2 hover:bg-gray-100">Sign Out</a>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex">
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar w-64 bg-white border-r border-gray-200 h-[calc(100vh-73px)] sticky top-[73px] overflow-y-auto">
+<div class="p-4">
+<h2 class="text-lg font-semibold mb-4">Browser Features</h2>
+<div class="space-y-6">
+<!-- VPN Section -->
+<div class="card p-4 bg-gray-50 rounded">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-medium">VPN</h3>
+<label class="custom-switch">
+<input type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<p class="text-sm text-gray-600">Secure browsing with our built-in VPN</p>
+</div>
+<!-- Resource Limiters -->
+<div class="card p-4 bg-gray-50 rounded">
+<h3 class="font-medium mb-3">Resource Limiters</h3>
+<div class="mb-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-sm">RAM Limiter</span>
+<span class="text-sm font-medium">4.2 GB</span>
+</div>
+<input type="range" class="range-slider" min="1" max="16" value="4">
+</div>
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="text-sm">CPU Limiter</span>
+<span class="text-sm font-medium">35%</span>
+</div>
+<input type="range" class="range-slider" min="10" max="100" value="35">
+</div>
+</div>
+<!-- Ad Blocker -->
+<div class="card p-4 bg-gray-50 rounded">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-medium">Ad Blocker</h3>
+<label class="custom-switch">
+<input type="checkbox" checked>
+<span class="slider"></span>
+</label>
+</div>
+<p class="text-sm text-gray-600">Blocking <span class="font-medium">1,254</span> ads today</p>
+</div>
+<!-- Music Player -->
+<div class="card p-4 bg-gray-50 rounded">
+<h3 class="font-medium mb-3">Music Player</h3>
+<div class="bg-gray-100 rounded p-3 mb-3">
+<p class="text-sm font-medium truncate">The Weeknd - Blinding Lights</p>
+<p class="text-xs text-gray-500">After Hours (2020)</p>
+</div>
+<div class="flex justify-between items-center">
+<button class="p-2 rounded-full hover:bg-gray-200 w-8 h-8 flex items-center justify-center">
+<i class="ri-skip-back-line"></i>
+</button>
+<button class="p-2 rounded-full bg-primary text-white hover:bg-primary/90 w-10 h-10 flex items-center justify-center">
+<i class="ri-play-line"></i>
+</button>
+<button class="p-2 rounded-full hover:bg-gray-200 w-8 h-8 flex items-center justify-center">
+<i class="ri-skip-forward-line"></i>
+</button>
+</div>
+</div>
+<!-- Crypto Wallet -->
+<div class="card p-4 bg-gray-50 rounded">
+<h3 class="font-medium mb-2">Crypto Wallet</h3>
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center">
+<div class="w-8 h-8 bg-[#f7931a] rounded-full flex items-center justify-center mr-2">
+<i class="ri-bit-coin-line text-white"></i>
+</div>
+<span>Bitcoin</span>
+</div>
+<span class="font-medium">0.0042 BTC</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-8 h-8 bg-[#627eea] rounded-full flex items-center justify-center mr-2">
+<i class="ri-ethereum-line text-white"></i>
+</div>
+<span>Ethereum</span>
+</div>
+<span class="font-medium">0.0215 ETH</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Content Area -->
+<div class="flex-grow p-6 bg-gradient-to-br from-white via-purple-50 to-indigo-50 bg-[url('https://readdy.ai/api/search-image?query=modern%2520abstract%2520background%2520with%2520soft%2520gradient%2520waves%2520and%2520flowing%2520lines%2C%2520minimal%2520geometric%2520shapes%2520in%2520light%2520purple%2520and%2520blue%2520tones%2C%2520elegant%2520and%2520clean%2520design%2520with%2520subtle%2520depth%2520and%2520smooth%2520transitions%2C%2520perfect%2520for%2520modern%2520UI&width=1920&height=1080&seq=8&orientation=landscape')]" style="background-size: cover; background-position: center; background-blend-mode: soft-light;">
+<div class="max-w-4xl mx-auto mt-10">
+<!-- Search Section -->
+<div class="text-center mb-8">
+<h1 class="text-4xl font-['Pacifico'] text-primary mb-6">MIRANOO.</h1>
+<div class="relative">
+<div class="search-bar bg-white rounded-lg shadow-lg flex items-center p-3 relative">
+<div class="w-8 h-8 flex items-center justify-center text-gray-400">
+<i class="ri-search-line ri-lg"></i>
+</div>
+<input type="text" placeholder="Search the web..." class="flex-grow px-3 py-2 border-none outline-none text-gray-800">
+<div class="w-8 h-8 flex items-center justify-center text-gray-400 cursor-pointer">
+<i class="ri-mic-line ri-lg"></i>
+</div>
+</div>
+<!-- Search Suggestions -->
+<div class="search-suggestions bg-white rounded-lg shadow-lg mt-1 text-left">
+<div class="p-2">
+<div class="px-3 py-2 hover:bg-gray-100 rounded cursor-pointer">
+<div class="flex items-center">
+<div class="w-6 h-6 flex items-center justify-center text-gray-400 mr-2">
+<i class="ri-history-line"></i>
+</div>
+<span>opera gx browser download</span>
+</div>
+</div>
+<div class="px-3 py-2 hover:bg-gray-100 rounded cursor-pointer">
+<div class="flex items-center">
+<div class="w-6 h-6 flex items-center justify-center text-gray-400 mr-2">
+<i class="ri-search-line"></i>
+</div>
+<span>best gaming browsers 2025</span>
+</div>
+</div>
+<div class="px-3 py-2 hover:bg-gray-100 rounded cursor-pointer">
+<div class="flex items-center">
+<div class="w-6 h-6 flex items-center justify-center text-gray-400 mr-2">
+<i class="ri-search-line"></i>
+</div>
+<span>how to optimize browser for gaming</span>
+</div>
+</div>
+<div class="px-3 py-2 hover:bg-gray-100 rounded cursor-pointer">
+<div class="flex items-center">
+<div class="w-6 h-6 flex items-center justify-center text-gray-400 mr-2">
+<i class="ri-search-line"></i>
+</div>
+<span>miranoo vs opera gx comparison</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Search Filters -->
+<div class="flex justify-center mt-4 bg-white/80 backdrop-blur-sm rounded-full inline-block px-1 py-1 mx-auto">
+<button class="px-4 py-2 rounded-full bg-primary text-white font-medium whitespace-nowrap">Web</button>
+<button class="px-4 py-2 rounded-full text-gray-700 hover:bg-gray-100 font-medium whitespace-nowrap">Images</button>
+<button class="px-4 py-2 rounded-full text-gray-700 hover:bg-gray-100 font-medium whitespace-nowrap">Videos</button>
+<button class="px-4 py-2 rounded-full text-gray-700 hover:bg-gray-100 font-medium whitespace-nowrap">News</button>
+</div>
+</div>
+<!-- Speed Dial Section -->
+<div class="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-semibold text-gray-800">Quick Access</h2>
+<button class="text-primary hover:text-primary/80 font-medium flex items-center whitespace-nowrap !rounded-button">
+<i class="ri-edit-line mr-1"></i> Edit
+</button>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+<!-- Speed Dial Items -->
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-[#4267B2] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-facebook-fill text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">Facebook</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-gradient-to-tr from-[#fd5949] to-[#d6249f] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-instagram-line text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">Instagram</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-[#FF0000] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-youtube-fill text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">YouTube</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-[#6441a5] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-twitch-fill text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">Twitch</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-[#1DA1F2] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-twitter-x-fill text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">Twitter</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-[#0e76a8] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-linkedin-fill text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">LinkedIn</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-[#25D366] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-whatsapp-fill text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">WhatsApp</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-[#EA4335] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-mail-fill text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">Gmail</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-[#7289DA] rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-discord-fill text-white ri-xl"></i>
+</div>
+<p class="text-sm font-medium">Discord</p>
+</div>
+<div class="speed-dial bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer">
+<div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+<i class="ri-add-line text-gray-600 ri-xl"></i>
+</div>
+<p class="text-sm font-medium">Add New</p>
+</div>
+</div>
+</div>
+<!-- GX Corner Section -->
+<div class="mt-8 bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center">
+<span class="bg-primary text-white px-3 py-1 rounded-full text-xs mr-2">NOO</span>
+<h2 class="text-lg font-semibold text-gray-800">Gaming Corner</h2>
+</div>
+<div class="flex space-x-2">
+<button class="p-2 rounded-full hover:bg-gray-100 w-8 h-8 flex items-center justify-center">
+<i class="ri-arrow-left-s-line"></i>
+</button>
+<button class="p-2 rounded-full hover:bg-gray-100 w-8 h-8 flex items-center justify-center">
+<i class="ri-arrow-right-s-line"></i>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Game News -->
+<div>
+<h3 class="text-md font-semibold mb-4 text-gray-800">Latest Gaming News</h3>
+<div class="space-y-4">
+<div class="flex items-start">
+<div class="w-20 h-20 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=screenshot%2520from%2520a%2520modern%2520video%2520game%2520showing%2520detailed%2520fantasy%2520character%2520with%2520armor%2520and%2520weapons%2520in%2520a%2520realistic%2520environment%2520with%2520high%2520quality%2520graphics&width=80&height=80&seq=2&orientation=squarish" alt="Game news" class="w-full h-full object-cover object-top">
+</div>
+<div>
+<h4 class="font-medium text-sm">Elden Ring DLC 'Shadow of the Erdtree' Breaks Sales Records</h4>
+<p class="text-xs text-gray-600 mt-1">FromSoftware's latest expansion has sold over 10 million copies in its first week.</p>
+<p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-20 h-20 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=screenshot%2520from%2520a%2520competitive%2520esports%2520game%2520showing%2520intense%2520action%2520with%2520multiple%2520players%2520and%2520special%2520effects%2520in%2520a%2520tournament%2520setting&width=80&height=80&seq=3&orientation=squarish" alt="Game news" class="w-full h-full object-cover object-top">
+</div>
+<div>
+<h4 class="font-medium text-sm">ESL Announces $2M Prize Pool for Next Major CS2 Tournament</h4>
+<p class="text-xs text-gray-600 mt-1">The biggest Counter-Strike 2 event of the year will be held in Stockholm this August.</p>
+<p class="text-xs text-gray-500 mt-1">5 hours ago</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-20 h-20 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=screenshot%2520of%2520a%2520racing%2520game%2520showing%2520a%2520sports%2520car%2520on%2520a%2520detailed%2520track%2520with%2520realistic%2520lighting%2520and%2520weather%2520effects&width=80&height=80&seq=4&orientation=squarish" alt="Game news" class="w-full h-full object-cover object-top">
+</div>
+<div>
+<h4 class="font-medium text-sm">Forza Motorsport 8 Reveals Next-Gen Ray Tracing Features</h4>
+<p class="text-xs text-gray-600 mt-1">Microsoft's racing sim pushes graphical boundaries with latest update.</p>
+<p class="text-xs text-gray-500 mt-1">Yesterday</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Game Deals -->
+<div>
+<h3 class="text-md font-semibold mb-4 text-gray-800">Hot Gaming Deals</h3>
+<div class="space-y-4">
+<div class="bg-gray-50 p-3 rounded-lg flex items-center">
+<div class="w-16 h-16 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=steam%2520game%2520store%2520logo%2520on%2520dark%2520background%2520with%2520blue%2520accents&width=64&height=64&seq=5&orientation=squarish" alt="Steam" class="w-full h-full object-cover object-top">
+</div>
+<div class="flex-grow">
+<h4 class="font-medium text-sm">Steam Summer Sale</h4>
+<p class="text-xs text-gray-600">Up to 90% off thousands of games</p>
+</div>
+<div class="text-right">
+<span class="bg-red-500 text-white text-xs px-2 py-1 rounded">-75%</span>
+</div>
+</div>
+<div class="bg-gray-50 p-3 rounded-lg flex items-center">
+<div class="w-16 h-16 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=epic%2520games%2520store%2520logo%2520on%2520dark%2520background%2520with%2520white%2520accents&width=64&height=64&seq=6&orientation=squarish" alt="Epic Games" class="w-full h-full object-cover object-top">
+</div>
+<div class="flex-grow">
+<h4 class="font-medium text-sm">Epic Games Store</h4>
+<p class="text-xs text-gray-600">2 free games every week</p>
+</div>
+<div class="text-right">
+<span class="bg-green-500 text-white text-xs px-2 py-1 rounded">FREE</span>
+</div>
+</div>
+<div class="bg-gray-50 p-3 rounded-lg flex items-center">
+<div class="w-16 h-16 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=xbox%2520game%2520pass%2520logo%2520on%2520green%2520background&width=64&height=64&seq=7&orientation=squarish" alt="Xbox Game Pass" class="w-full h-full object-cover object-top">
+</div>
+<div class="flex-grow">
+<h4 class="font-medium text-sm">Xbox Game Pass</h4>
+<p class="text-xs text-gray-600">First month for $1</p>
+</div>
+<div class="text-right">
+<span class="bg-blue-500 text-white text-xs px-2 py-1 rounded">DEAL</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="footer w-full py-6 px-6 bg-white border-t border-gray-200">
+<div class="max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+<div>
+<h3 class="text-lg font-semibold mb-4">Miranoo</h3>
+<p class="text-sm text-gray-600 mb-4">The gaming-focused browser that optimizes your online experience.</p>
+<div class="flex space-x-4">
+<a href="#" class="text-gray-500 hover:text-primary">
+<div class="w-8 h-8 flex items-center justify-center">
+<i class="ri-facebook-fill"></i>
+</div>
+</a>
+<a href="#" class="text-gray-500 hover:text-primary">
+<div class="w-8 h-8 flex items-center justify-center">
+<i class="ri-twitter-x-fill"></i>
+</div>
+</a>
+<a href="#" class="text-gray-500 hover:text-primary">
+<div class="w-8 h-8 flex items-center justify-center">
+<i class="ri-instagram-fill"></i>
+</div>
+</a>
+<a href="#" class="text-gray-500 hover:text-primary">
+<div class="w-8 h-8 flex items-center justify-center">
+<i class="ri-discord-fill"></i>
+</div>
+</a>
+</div>
+</div>
+<div>
+<h3 class="text-sm font-semibold uppercase text-gray-500 mb-4">Resources</h3>
+<ul class="space-y-2">
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Help Center</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Community</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Developers</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Blog</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Status</a></li>
+</ul>
+</div>
+<div>
+<h3 class="text-sm font-semibold uppercase text-gray-500 mb-4">Company</h3>
+<ul class="space-y-2">
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">About</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Careers</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Press</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Contact</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Partners</a></li>
+</ul>
+</div>
+<div>
+<h3 class="text-sm font-semibold uppercase text-gray-500 mb-4">Legal</h3>
+<ul class="space-y-2">
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Privacy Policy</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Terms of Service</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">Cookie Policy</a></li>
+<li><a href="#" class="text-sm text-gray-600 hover:text-primary">GDPR</a></li>
+</ul>
+<div class="mt-6">
+<label class="text-sm font-semibold text-gray-500 mb-2 block">Language</label>
+<div class="relative">
+<select class="appearance-none bg-gray-50 border border-gray-200 rounded p-2 w-full text-sm pr-8">
+<option>English</option>
+<option>Español</option>
+<option>Français</option>
+<option>Deutsch</option>
+<option>日本語</option>
+<option>中文</option>
+</select>
+<div class="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="border-t border-gray-200 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
+<p class="text-sm text-gray-500">© 2025 Miranoo. All rights reserved.</p>
+<div class="flex items-center mt-4 md:mt-0">
+<span class="text-sm text-gray-500 mr-2">Powered by</span>
+<div class="flex space-x-4">
+<div class="w-8 h-8 flex items-center justify-center">
+<i class="ri-chrome-fill text-gray-500"></i>
+</div>
+<div class="w-8 h-8 flex items-center justify-center">
+<i class="ri-firefox-fill text-gray-500"></i>
+</div>
+<div class="w-8 h-8 flex items-center justify-center">
+<i class="ri-edge-fill text-gray-500"></i>
+</div>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Theme Toggle
+const themeToggle = document.getElementById('theme-toggle');
+const body = document.body;
+themeToggle.addEventListener('change', function() {
+if (this.checked) {
+body.classList.add('dark');
+} else {
+body.classList.remove('dark');
+}
+});
+});
+document.addEventListener('DOMContentLoaded', function() {
+// Sidebar Toggle
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebar = document.getElementById('sidebar');
+sidebarToggle.addEventListener('click', function() {
+sidebar.classList.toggle('sidebar-collapsed');
+});
+});
+document.addEventListener('DOMContentLoaded', function() {
+// Search Suggestions
+const searchInput = document.querySelector('.search-bar input');
+const searchSuggestions = document.querySelector('.search-suggestions');
+searchInput.addEventListener('focus', function() {
+searchSuggestions.style.display = 'block';
+});
+searchInput.addEventListener('blur', function() {
+setTimeout(function() {
+searchSuggestions.style.display = 'none';
+}, 200);
+});
+searchInput.addEventListener('input', function() {
+if (this.value.length > 0) {
+searchSuggestions.style.display = 'block';
+} else {
+searchSuggestions.style.display = 'none';
+}
+});
+});
+</script>
+</body>
+</html>
